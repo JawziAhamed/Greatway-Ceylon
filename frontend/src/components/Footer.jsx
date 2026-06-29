@@ -1,5 +1,6 @@
-import { Leaf, Phone, MapPin, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Phone, MapPin, Mail, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 export default function Footer() {
     return (
@@ -9,9 +10,7 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="space-y-4">
                         <Link to="/" className="flex items-center space-x-2">
-                            <div className="bg-white p-2 rounded-full text-primary-900">
-                                <Leaf size={24} />
-                            </div>
+                            <img src={logo} alt="Greatway Export Logo" className="h-10 w-10 object-contain rounded-full bg-white p-1" />
                             <span className="font-heading font-bold text-2xl text-white">
                                 Greatway <span className="text-gold-500">Export</span>
                             </span>
@@ -20,14 +19,25 @@ export default function Footer() {
                             Premium exporter of fresh fruits, vegetables, and aromatic spices from Sri Lanka to the United Arab Emirates and beyond.
                         </p>
                         <div className="flex space-x-4 pt-2">
-                            <a href="#" className="text-primary-200 hover:text-white transition-colors bg-primary-800 p-2 rounded-full hover:bg-gold-500">
-                                <Facebook size={18} />
-                            </a>
-                            <a href="#" className="text-primary-200 hover:text-white transition-colors bg-primary-800 p-2 rounded-full hover:bg-gold-500">
+                            <a
+                                href="https://www.instagram.com/greatway_ceylon?igsh=NTQxNzE0OXMzaXNy&utm_source=qr"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-200 hover:text-white transition-colors bg-primary-800 p-2 rounded-full hover:bg-gold-500 flex items-center justify-center animate-fade-in"
+                                aria-label="Instagram"
+                            >
                                 <Instagram size={18} />
                             </a>
-                            <a href="#" className="text-primary-200 hover:text-white transition-colors bg-primary-800 p-2 rounded-full hover:bg-gold-500">
-                                <Twitter size={18} />
+                            <a
+                                href="https://www.tiktok.com/@greatway_ceylon?_r=1&_t=ZS-95yOqzKcEYZ"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-200 hover:text-white transition-colors bg-primary-800 p-2 rounded-full hover:bg-gold-500 flex items-center justify-center animate-fade-in"
+                                aria-label="TikTok"
+                            >
+                                <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"></path>
+                                </svg>
                             </a>
                         </div>
                     </div>
@@ -64,16 +74,16 @@ export default function Footer() {
                             <li className="flex items-start">
                                 <Phone className="text-gold-500 mr-3 mt-1 shrink-0" size={18} />
                                 <div>
-                                    <p className="text-sm font-semibold text-white">UAE Contact </p>
-                                    <p className="text-primary-200 text-sm">+97 154 780 2290</p>
+                                    <p className="text-sm font-semibold text-white">UAE Contact</p>
+                                    <p className="text-primary-200 text-sm">+971 54 780 2290</p>
                                 </div>
                             </li>
                             <li className="flex items-start">
                                 <Phone className="text-gold-500 mr-3 mt-1 shrink-0" size={18} />
                                 <div>
-                                    <p className="text-sm font-semibold text-white">Sri Lanka Wearhouse</p>
+                                    <p className="text-sm font-semibold text-white">Sri Lanka Warehouse</p>
+                                    <p className="text-primary-200 text-sm">+94 76 999 7584</p>
                                     <p className="text-primary-200 text-sm">+94 76 775 2181</p>
-                                    <p className="text-primary-200 text-sm">+94 76 168 0009</p>
                                 </div>
                             </li>
                             <li className="flex items-start">

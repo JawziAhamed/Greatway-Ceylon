@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, Leaf, Loader2 } from 'lucide-react';
+import { Lock, User, Loader2 } from 'lucide-react';
 import { adminLogin } from '../utils/api';
+import logo from '../assets/logo.png';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
@@ -33,9 +34,7 @@ export default function AdminLogin() {
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <div className="flex justify-center">
-                    <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
-                        <Leaf className="w-10 h-10 text-gold-400" />
-                    </div>
+                    <img src={logo} alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1" />
                 </div>
                 <h2 className="mt-6 text-center text-3xl font-extrabold text-white font-heading">
                     Admin Portal

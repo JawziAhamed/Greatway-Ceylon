@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Menu, X, Leaf } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -28,9 +29,7 @@ export default function Navbar() {
                 <div className="flex justify-between items-center bg-white/80 backdrop-blur-md rounded-full px-6 py-2 shadow-lg border border-primary-100">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2 group">
-                        <div className="bg-primary-700 p-2 rounded-full text-white group-hover:bg-gold-500 transition-colors">
-                            <Leaf size={24} />
-                        </div>
+                        <img src={logo} alt="Greatway Export Logo" className="h-10 w-10 object-contain rounded-full" />
                         <span className="font-heading font-bold text-xl text-primary-900 hidden sm:block">
                             Greatway <span className="text-gold-600">Export</span>
                         </span>

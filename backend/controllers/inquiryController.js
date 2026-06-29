@@ -1,10 +1,48 @@
 const Inquiry = require('../models/Inquiry');
+const twilio = require('twilio');
+
+const sendWhatsAppNotification = async (inquiry) => {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'; // Twilio sandbox default
+    const toNumber = 'whatsapp:+94725737391'; // User's WhatsApp number
+
+    if (!accountSid || !authToken) {
+        console.warn('[Twilio] Credentials not configured in backend/.env. Skipping WhatsApp notification.');
+        return;
+    }
+
+    try {
+        const client = twilio(accountSid, authToken);
+        const text = `*New Inquiry - Greatway Ceylon*\n\n` +
+            `*Name:* ${inquiry.name}\n` +
+            `*Email:* ${inquiry.email}\n` +
+            `*Phone:* ${inquiry.phone}\n` +
+            `*Product:* ${inquiry.productOfInterest || 'General Inquiry'}\n` +
+            `*Message:* ${inquiry.message}`;
+
+        await client.messages.create({
+            body: text,
+            from: fromNumber,
+            to: toNumber
+        });
+        console.log('[Twilio] WhatsApp notification sent successfully to +94725737391');
+    } catch (error) {
+        console.error('[Twilio] Error sending WhatsApp notification:', error.message);
+    }
+};
 
 // Submit new inquiry
 exports.createInquiry = async (req, res) => {
     try {
         const newInquiry = new Inquiry(req.body);
         const savedInquiry = await newInquiry.save();
+
+        // Send WhatsApp notification in the background
+        sendWhatsAppNotification(savedInquiry).catch(err => {
+            console.error('[Twilio] Background notification promise rejection:', err);
+        });
+
         res.status(201).json({ message: 'Inquiry submitted successfully', inquiry: savedInquiry });
     } catch (error) {
         res.status(400).json({ message: error.message });

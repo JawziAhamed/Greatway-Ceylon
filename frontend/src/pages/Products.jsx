@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ShoppingCart, Leaf, Search, ArrowRight, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShoppingCart, Leaf, Search, ArrowRight, X, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getProducts } from '../utils/api';
 
 const categories = ["All", "Fresh Fruits", "Fresh Vegetables", "Spices", "Nuts", "Tea"];
 
@@ -12,34 +13,53 @@ const allProducts = [
     { id: 4, name: 'Avocado', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/e4/5d/2e/e45d2e41c17cbe4d1ab93f595fcec3be.jpg', desc: 'Creamy, rich Hass and local avocado varieties.' },
     { id: 5, name: 'Rambutan', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/4f/0b/4d/4f0b4daa7904fa976bafa3383869b94d.jpg', desc: 'Sweet, juicy tropical fruit with a hairy exterior.' },
     { id: 6, name: 'Pineapple', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/59/26/f8/5926f8f56b1fb439e25de2fa4ffb02eb.jpg', desc: 'Golden, sweet and tangy tropical pineapples.' },
-    { id: 6, name: 'Bell Pepper', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/f2/b7/be/f2b7be150b209f188e62f166fdacda7e.jpg', desc: 'Fresh, crisp and vibrant bell peppers bursting with natural flavor.' },
-    { id: 6, name: 'Mangosteen', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/7a/84/84/7a848428f61d5969723221d47374b89b.jpg', desc: 'Royal, sweet and delicately tangy mangosteens with a rich tropical flavor.' },
-
+    { id: 7, name: 'Bell Pepper', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/f2/b7/be/f2b7be150b209f188e62f166fdacda7e.jpg', desc: 'Fresh, crisp and vibrant bell peppers bursting with natural flavor.' },
+    { id: 8, name: 'Mangosteen', category: 'Fresh Fruits', image: 'https://i.pinimg.com/736x/7a/84/84/7a848428f61d5969723221d47374b89b.jpg', desc: 'Royal, sweet and delicately tangy mangosteens with a rich tropical flavor.' },
 
     // Fresh Vegetables
-    { id: 7, name: 'Cassava', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/25/c2/9a/25c29a51abb4f01d4a30738cdc28804e.jpg', desc: 'Premium grade starchy root vegetable.' },
-    { id: 8, name: 'Cucumber', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/e1/00/5d/e1005d2c5dceaa88104eee885b12397a.jpg', desc: 'Cool, crunchy cucumbers packed with refreshing goodness.' },
-    { id: 8, name: 'Capsicum', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/ce/14/97/ce1497c448466c0713a4ccb161a83e5d.jpg', desc: 'Premium quality capsicums carefully harvested for maximum freshness.' },
+    { id: 9, name: 'Cassava', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/25/c2/9a/25c29a51abb4f01d4a30738cdc28804e.jpg', desc: 'Premium grade starchy root vegetable.' },
+    { id: 10, name: 'Cucumber', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/e1/00/5d/e1005d2c5dceaa88104eee885b12397a.jpg', desc: 'Cool, crunchy cucumbers packed with refreshing goodness.' },
+    { id: 11, name: 'Capsicum', category: 'Fresh Vegetables', image: 'https://i.pinimg.com/736x/ce/14/97/ce1497c448466c0713a4ccb161a83e5d.jpg', desc: 'Premium quality capsicums carefully harvested for maximum freshness.' },
 
-     // Tea
-    { id: 13, name: 'Ceylon Tea Powder', category: 'Tea', image: 'https://i.pinimg.com/1200x/7e/15/de/7e15ded036668598363c3a2cc8d8785e.jpg', desc: 'Rich, full-bodied premium black tea.' },
+    // Tea
+    { id: 12, name: 'Ceylon Tea Powder', category: 'Tea', image: 'https://i.pinimg.com/1200x/7e/15/de/7e15ded036668598363c3a2cc8d8785e.jpg', desc: 'Rich, full-bodied premium black tea.' },
+
     // Spices
-    { id: 8, name: 'Ceylon Cinnamon', category: 'Spices', image: 'https://i.pinimg.com/1200x/f7/3f/3a/f73f3aec3098431ffa4da61675ee455e.jpg', desc: 'True Ceylon cinnamon quills, highly aromatic.' },
-    { id: 9, name: 'Cardamom', category: 'Spices', image: 'https://i.pinimg.com/736x/cb/46/6c/cb466cc18ceee416ccc5647ead03a1db.jpg', desc: 'Intensely fragrant green cardamom pods.' },
-    { id: 10, name: 'Clove', category: 'Spices', image: 'https://i.pinimg.com/736x/23/d9/1b/23d91baaa727babd4d5102cf1f2c5a01.jpg', desc: 'Rich, warm, and highly aromatic whole cloves.' },
-    { id: 11, name: 'Black Pepper', category: 'Spices', image: 'https://i.pinimg.com/736x/1f/af/5f/1faf5fc9e9b479020ba0e0125f19770e.jpg', desc: 'Bold, pungent whole black peppercorns.' },
+    { id: 13, name: 'Ceylon Cinnamon', category: 'Spices', image: 'https://i.pinimg.com/1200x/f7/3f/3a/f73f3aec3098431ffa4da61675ee455e.jpg', desc: 'True Ceylon cinnamon quills, highly aromatic.' },
+    { id: 14, name: 'Cardamom', category: 'Spices', image: 'https://i.pinimg.com/736x/cb/46/6c/cb466cc18ceee416ccc5647ead03a1db.jpg', desc: 'Intensely fragrant green cardamom pods.' },
+    { id: 15, name: 'Clove', category: 'Spices', image: 'https://i.pinimg.com/736x/23/d9/1b/23d91baaa727babd4d5102cf1f2c5a01.jpg', desc: 'Rich, warm, and highly aromatic whole cloves.' },
+    { id: 16, name: 'Black Pepper', category: 'Spices', image: 'https://i.pinimg.com/736x/1f/af/5f/1faf5fc9e9b479020ba0e0125f19770e.jpg', desc: 'Bold, pungent whole black peppercorns.' },
 
     // Nuts
-    { id: 12, name: 'Cashew Nuts', category: 'Nuts', image: 'https://i.pinimg.com/736x/1d/30/13/1d301369ba5c2d2b4769735fe5498aa6.jpg', desc: 'Premium grade, creamy whole cashew nuts.' },
-
-   
+    { id: 17, name: 'Cashew Nuts', category: 'Nuts', image: 'https://i.pinimg.com/736x/1d/30/13/1d301369ba5c2d2b4769735fe5498aa6.jpg', desc: 'Premium grade, creamy whole cashew nuts.' },
 ];
 
 export default function Products() {
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredProducts = allProducts.filter(product => {
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const data = await getProducts();
+                if (data && data.length > 0) {
+                    setProducts(data);
+                } else {
+                    setProducts(allProducts);
+                }
+            } catch (err) {
+                console.error("Failed to fetch products from backend, falling back to static list", err);
+                setProducts(allProducts);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    const filteredProducts = products.filter(product => {
         const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
@@ -103,33 +123,44 @@ export default function Products() {
                 </div>
 
                 {/* Products Grid */}
-                {filteredProducts.length > 0 ? (
+                {loading ? (
+                    <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
+                        <Loader2 className="mx-auto h-16 w-16 text-primary-600 animate-spin mb-4" />
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">Loading products</h3>
+                        <p className="text-gray-500">Please wait while we load our premium catalog.</p>
+                    </div>
+                ) : filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {filteredProducts.map((product) => (
-                            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-2">
-                                <div className="relative h-56 overflow-hidden">
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                        loading="lazy"
-                                    />
-                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm text-xs font-bold text-primary-700">
-                                        {product.category}
+                        {filteredProducts.map((product) => {
+                            const productId = product._id || product.id;
+                            const productImage = product.imageUrl || product.image;
+                            const productDesc = product.description || product.desc;
+                            return (
+                                <div key={productId} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-2">
+                                    <div className="relative h-56 overflow-hidden">
+                                        <img
+                                            src={productImage}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm text-xs font-bold text-primary-700">
+                                            {product.category}
+                                        </div>
+                                    </div>
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">{product.name}</h3>
+                                        <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-grow">{productDesc}</p>
+                                        <Link
+                                            to={`/contact?product=${encodeURIComponent(product.name)}`}
+                                            className="w-full bg-primary-50 hover:bg-primary-700 text-primary-700 hover:text-white border border-primary-200 hover:border-transparent font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center group/btn"
+                                        >
+                                            Send Inquiry <ArrowRight size={18} className="ml-2 mt-0.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                                        </Link>
                                     </div>
                                 </div>
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">{product.name}</h3>
-                                    <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-grow">{product.desc}</p>
-                                    <Link
-                                        to={`/contact?product=${encodeURIComponent(product.name)}`}
-                                        className="w-full bg-primary-50 hover:bg-primary-700 text-primary-700 hover:text-white border border-primary-200 hover:border-transparent font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center group/btn"
-                                    >
-                                        Send Inquiry <ArrowRight size={18} className="ml-2 mt-0.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">

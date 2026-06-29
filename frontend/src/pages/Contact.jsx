@@ -93,11 +93,11 @@ export default function Contact() {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1 text-primary-50">🇱🇰 Sri Lanka Operations</h4>
+                                        <a href="tel:+94769997584" className="text-primary-200 hover:text-gold-400 transition-colors block">
+                                            +94 76 999 7584
+                                        </a>
                                         <a href="tel:+94767752181" className="text-primary-200 hover:text-gold-400 transition-colors block">
                                             +94 76 775 2181
-                                        </a>
-                                        <a href="tel:+94761680009" className="text-primary-200 hover:text-gold-400 transition-colors block">
-                                            +94 76 168 0009
                                         </a>
                                     </div>
                                 </div>
@@ -120,7 +120,7 @@ export default function Contact() {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1 text-primary-50">Headquarters</h4>
-                                        <p className="text-primary-200">Colombo, Sri Lanka</p>
+                                        <p className="text-primary-200">Welimada, Sri Lanka</p>
                                         <p className="text-primary-300 mt-1 text-sm">Logistics partners in Dubai, UAE</p>
                                     </div>
                                 </div>
@@ -284,13 +284,13 @@ export default function Contact() {
                 <div className="mt-12 rounded-3xl overflow-hidden shadow-xl border border-gray-100">
                     <div className="bg-white p-6 border-b border-gray-100">
                         <h3 className="text-2xl font-bold text-gray-900 font-heading flex items-center gap-2">
-                            <MapPin className="text-primary-600" /> Our Location – Colombo, Sri Lanka
+                            <MapPin className="text-primary-600" /> Our Location – Welimada, Sri Lanka
                         </h3>
-                        <p className="text-gray-500 mt-1 text-sm">Export operations based in Colombo with direct logistics to Dubai, UAE.</p>
+                        <p className="text-gray-500 mt-1 text-sm">Export operations based in Welimada with direct logistics to Dubai, UAE.</p>
                     </div>
                     <iframe
-                        title="Greatway Exports - Colombo, Sri Lanka"
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126743.58520706665!2d79.77128315!3d6.921831749999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae253d10f7a7003%3A0x320b2e4d32d3838d!2sColombo%2C%20Sri%20Lanka!5e0!3m2!1sen!2slk!4v1700000000000!5m2!1sen!2slk"
+                        title="Greatway Exports - Welimada, Sri Lanka"
+                        src="https://maps.google.com/maps?q=Welimada,%20Sri%20Lanka&t=&z=13&ie=UTF8&iwloc=&output=embed"
                         width="100%"
                         height="400"
                         style={{ border: 0, display: 'block' }}

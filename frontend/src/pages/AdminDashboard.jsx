@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Package, MessageSquare, LogOut, Trash2, Plus, Edit,
-    CheckCircle, Clock, Loader2, X, Save, AlertTriangle, Leaf
+    CheckCircle, Clock, Loader2, X, Save, AlertTriangle
 } from 'lucide-react';
+import logo from '../assets/logo.png';
 import {
     getProducts, createProduct, updateProduct, deleteProduct,
     getInquiries, updateInquiryStatus, deleteInquiry
@@ -136,9 +137,7 @@ export default function AdminDashboard() {
             {/* Sidebar */}
             <div className="w-full md:w-64 bg-primary-900 text-white flex flex-col shrink-0">
                 <div className="p-6 border-b border-primary-800 flex items-center gap-3">
-                    <div className="bg-gold-500/20 p-2 rounded-xl">
-                        <Leaf className="w-6 h-6 text-gold-400" />
-                    </div>
+                    <img src={logo} alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white p-0.5" />
                     <div>
                         <h2 className="text-lg font-bold font-heading leading-tight">Admin Panel</h2>
                         <p className="text-primary-300 text-xs">Greatway Exports</p>
