@@ -145,17 +145,17 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1 py-4">
                     <nav className="space-y-1 px-3">
-                        {navItems.map(({ id, icon: Icon, label }) => (
+                        {navItems.map((item) => (
                             <button
-                                key={id}
-                                onClick={() => setActiveTab(id)}
-                                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${activeTab === id
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${activeTab === item.id
                                     ? 'bg-primary-700 text-white shadow-md'
                                     : 'text-primary-100 hover:bg-primary-800'
                                     }`}
                             >
-                                <Icon className="mr-3 h-5 w-5" /> {label}
-                                {id === 'inquiries' && inquiries.filter(i => i.status === 'new').length > 0 && (
+                                <item.icon className="mr-3 h-5 w-5" /> {item.label}
+                                {item.id === 'inquiries' && inquiries.filter(i => i.status === 'new').length > 0 && (
                                     <span className="ml-auto bg-gold-500 text-primary-900 text-xs font-bold px-2 py-0.5 rounded-full">
                                         {inquiries.filter(i => i.status === 'new').length}
                                     </span>
