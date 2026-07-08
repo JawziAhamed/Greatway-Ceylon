@@ -75,6 +75,9 @@ export default function Footer() {
                                 <Phone className="text-gold-500 mr-3 mt-1 shrink-0" size={18} />
                                 <div>
                                     <p className="text-sm font-semibold text-white">UAE Contact</p>
+                                    <p className="text-primary-200 text-sm">+94 76 775 2181</p>
+                                </div>
+                                   <div>
                                     <p className="text-primary-200 text-sm">+971 54 780 2290</p>
                                 </div>
                             </li>
