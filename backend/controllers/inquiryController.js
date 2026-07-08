@@ -61,6 +61,11 @@ const buildCloudApiPayload = (inquiry, toNumber) => {
 };
 
 const sendWhatsAppNotification = async (inquiry) => {
+    if (process.env.BYPASS_WHATSAPP_NOTIFICATION === 'true') {
+        console.warn('[WhatsApp] Notification bypass enabled. Skipping WhatsApp notification.');
+        return;
+    }
+
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const apiVersion = process.env.WHATSAPP_GRAPH_VERSION || 'v23.0';

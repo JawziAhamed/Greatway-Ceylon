@@ -1,9 +1,27 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Leaf, Search, ArrowRight, X, Loader2 } from 'lucide-react';
+import { Leaf, Search, ArrowRight, X, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '../utils/api';
 
 const categories = ["All", "Fresh Fruits", "Fresh Vegetables", "Spices", "Nuts", "Tea"];
+
+const slugify = (value = '') =>
+    value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+const mergeStaticAndManagedProducts = (managedProducts = []) => {
+    const existingProductKeys = new Set(allProducts.map(product => slugify(product.name)));
+    const newManagedProducts = managedProducts.filter((product) => {
+        const productKey = product.slug || slugify(product.name);
+        return productKey && !existingProductKeys.has(productKey);
+    });
+
+    return [...allProducts, ...newManagedProducts];
+};
 
 const allProducts = [
     // Fresh Fruits
@@ -44,11 +62,7 @@ export default function Products() {
         const fetchProducts = async () => {
             try {
                 const data = await getProducts();
-                if (data && data.length > 0) {
-                    setProducts(data);
-                } else {
-                    setProducts(allProducts);
-                }
+                setProducts(mergeStaticAndManagedProducts(data || []));
             } catch (err) {
                 console.error("Failed to fetch products from backend, falling back to static list", err);
                 setProducts(allProducts);
@@ -134,7 +148,7 @@ export default function Products() {
                         {filteredProducts.map((product) => {
                             const productId = product._id || product.id;
                             const productImage = product.imageUrl || product.image;
-                            const productDesc = product.description || product.desc;
+                            const productDesc = product.shortDescription || product.desc || product.description;
                             return (
                                 <div key={productId} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-2">
                                     <div className="relative h-56 overflow-hidden">

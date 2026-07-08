@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   MapPin,
@@ -15,19 +15,58 @@ import {
   BarChart2,
   Ship,
   Hash,
+  Loader2,
 } from 'lucide-react';
 import { getProductBySlug } from '../data/products';
+import { getProduct } from '../utils/api';
 import CatalogDownloadButton from '../components/CatalogDownloadButton';
+
+const normalizeProduct = (product, fallbackSlug) => ({
+  ...product,
+  slug: product.slug || fallbackSlug,
+  image: product.image || product.imageUrl,
+  desc: product.desc || product.shortDescription || product.description,
+  origin: product.origin || 'Sri Lanka',
+});
 
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const product = getProductBySlug(slug);
+  const fallbackProduct = getProductBySlug(slug);
+  const [remoteProduct, setRemoteProduct] = useState({ slug: null, product: null });
+  const product = remoteProduct.slug === slug && remoteProduct.product
+    ? remoteProduct.product
+    : fallbackProduct
+      ? normalizeProduct(fallbackProduct, slug)
+      : null;
+  const loading = !product && remoteProduct.slug !== slug;
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
+
+  useEffect(() => {
+    let active = true;
+
+    getProduct(slug)
+      .then((data) => {
+        if (active) setRemoteProduct({ slug, product: normalizeProduct(data, slug) });
+      })
+      .catch(() => {
+        if (active) setRemoteProduct({ slug, product: null });
+      });
+
+    return () => { active = false; };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center px-4">
+        <Loader2 className="h-12 w-12 text-primary-600 animate-spin mb-4" />
+        <h1 className="text-2xl font-bold text-primary-900 font-heading">Loading product</h1>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

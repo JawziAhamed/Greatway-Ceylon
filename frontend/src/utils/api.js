@@ -48,9 +48,18 @@ export const deleteInquiry = async (id) => {
 };
 
 // --- Products ---
-export const getProducts = async () => {
-    const res = await fetch(`${API_BASE}/products`, { headers: getHeaders() });
+export const getProducts = async ({ includeUnavailable = false } = {}) => {
+    const query = includeUnavailable ? '?includeUnavailable=true' : '';
+    const res = await fetch(`${API_BASE}/products${query}`, {
+        headers: getHeaders(includeUnavailable),
+    });
     if (!res.ok) throw new Error('Failed to fetch products');
+    return res.json();
+};
+
+export const getProduct = async (identifier) => {
+    const res = await fetch(`${API_BASE}/products/${identifier}`, { headers: getHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch product');
     return res.json();
 };
 
@@ -70,7 +79,7 @@ export const updateProduct = async (id, data) => {
         headers: getHeaders(true),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to update product');
+    if (!res.ok) throw new Error((await res.json()).message || 'Failed to update product');
     return res.json();
 };
 
@@ -79,7 +88,7 @@ export const deleteProduct = async (id) => {
         method: 'DELETE',
         headers: getHeaders(true),
     });
-    if (!res.ok) throw new Error('Failed to delete product');
+    if (!res.ok) throw new Error((await res.json()).message || 'Failed to delete product');
     return res.json();
 };
 
