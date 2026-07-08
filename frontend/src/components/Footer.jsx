@@ -12,7 +12,7 @@ export default function Footer() {
                         <Link to="/" className="flex items-center space-x-2">
                             <img src={logo} alt="Greatway Export Logo" className="h-10 w-10 object-contain rounded-full bg-white p-1" />
                             <span className="font-heading font-bold text-2xl text-white">
-                                Greatway <span className="text-gold-500">Export</span>
+                                Greatway <span className="text-gold-500">Ceylon</span>
                             </span>
                         </Link>
                         <p className="text-primary-200 text-sm leading-relaxed">
