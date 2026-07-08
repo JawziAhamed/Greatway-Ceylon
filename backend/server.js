@@ -15,7 +15,11 @@ const allowedOrigins = [
     'https://greatwayceylon.com',
     'http://localhost:5173',
     'http://localhost:5174',
-    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : []),
+    'http://localhost:3000',
+    ...(process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || '')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
 ];
 
 const corsOptions = {
@@ -28,10 +32,18 @@ const corsOptions = {
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
 };
 
 // Middleware
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+
+    return next();
+});
 app.use(express.json());
 
 // Routes
