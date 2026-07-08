@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Package, MessageSquare, LogOut, Trash2, Plus, Edit,
-    CheckCircle, Clock, Loader2, X, Save, AlertTriangle
+    Package, MessageSquare, LogOut, Trash2, Plus, Edit,
+    CheckCircle, Loader2, X, Save, AlertTriangle
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import {
@@ -11,6 +11,36 @@ import {
 } from '../utils/api';
 
 const CATEGORIES = ['Fresh Fruits', 'Fresh Vegetables', 'Spices', 'Nuts', 'Tea'];
+
+const getEmptyProductForm = () => ({
+    name: '',
+    slug: '',
+    category: 'Fresh Fruits',
+    shortDescription: '',
+    description: '',
+    imageUrl: '',
+    exportAvailability: true,
+    scientificName: '',
+    origin: 'Sri Lanka',
+    hsCode: '',
+    availability: '',
+    packaging: '',
+    shelfLife: '',
+    storage: '',
+    supplyCapacity: '',
+    price: '',
+    exportInfo: '',
+    benefits: '',
+    certifications: '',
+});
+
+const toMultiline = (value) => Array.isArray(value) ? value.join('\n') : '';
+
+const toList = (value) =>
+    value
+        .split(/\r?\n|,/)
+        .map(item => item.trim())
+        .filter(Boolean);
 
 const statusColors = {
     new: 'bg-yellow-100 text-yellow-800',
@@ -27,7 +57,7 @@ export default function AdminDashboard() {
     const [productsLoading, setProductsLoading] = useState(false);
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
-    const [productForm, setProductForm] = useState({ name: '', category: 'Fresh Fruits', description: '', imageUrl: '' });
+    const [productForm, setProductForm] = useState(getEmptyProductForm);
 
     // Inquiries state
     const [inquiries, setInquiries] = useState([]);
@@ -45,7 +75,7 @@ export default function AdminDashboard() {
     const loadProducts = useCallback(async () => {
         setProductsLoading(true);
         try {
-            const data = await getProducts();
+            const data = await getProducts({ includeUnavailable: true });
             setProducts(data);
         } catch { setError('Failed to load products.'); }
         finally { setProductsLoading(false); }
@@ -73,17 +103,26 @@ export default function AdminDashboard() {
     const handleProductSave = async (e) => {
         e.preventDefault();
         setActionLoading(p => ({ ...p, productSave: true }));
+        setError('');
+
+        const payload = {
+            ...productForm,
+            benefits: toList(productForm.benefits),
+            certifications: toList(productForm.certifications),
+            images: productForm.imageUrl ? [productForm.imageUrl] : [],
+        };
+
         try {
             if (editingProduct) {
-                const updated = await updateProduct(editingProduct._id, productForm);
+                const updated = await updateProduct(editingProduct._id, payload);
                 setProducts(p => p.map(x => x._id === editingProduct._id ? updated : x));
             } else {
-                const created = await createProduct(productForm);
+                const created = await createProduct(payload);
                 setProducts(p => [created, ...p]);
             }
             setShowProductForm(false);
             setEditingProduct(null);
-            setProductForm({ name: '', category: 'Fresh Fruits', description: '', imageUrl: '' });
+            setProductForm(getEmptyProductForm());
         } catch (err) { setError(err.message); }
         finally { setActionLoading(p => ({ ...p, productSave: false })); }
     };
@@ -101,8 +140,25 @@ export default function AdminDashboard() {
     const openEditProduct = (product) => {
         setEditingProduct(product);
         setProductForm({
-            name: product.name, category: product.category,
-            description: product.description, imageUrl: product.imageUrl
+            name: product.name || '',
+            slug: product.slug || '',
+            category: product.category || 'Fresh Fruits',
+            shortDescription: product.shortDescription || '',
+            description: product.description || '',
+            imageUrl: product.imageUrl || '',
+            exportAvailability: product.exportAvailability !== false,
+            scientificName: product.scientificName || '',
+            origin: product.origin || 'Sri Lanka',
+            hsCode: product.hsCode || '',
+            availability: product.availability || '',
+            packaging: product.packaging || '',
+            shelfLife: product.shelfLife || '',
+            storage: product.storage || '',
+            supplyCapacity: product.supplyCapacity || '',
+            price: product.price || '',
+            exportInfo: product.exportInfo || '',
+            benefits: toMultiline(product.benefits),
+            certifications: toMultiline(product.certifications),
         });
         setShowProductForm(true);
     };
@@ -274,7 +330,7 @@ export default function AdminDashboard() {
                                 <p className="text-gray-500 text-sm">{products.length} products in database</p>
                             </div>
                             <button
-                                onClick={() => { setShowProductForm(true); setEditingProduct(null); setProductForm({ name: '', category: 'Fresh Fruits', description: '', imageUrl: '' }); }}
+                                onClick={() => { setShowProductForm(true); setEditingProduct(null); setProductForm(getEmptyProductForm()); }}
                                 className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl flex items-center text-sm font-medium shadow-sm transition-colors"
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Add Product
@@ -293,30 +349,123 @@ export default function AdminDashboard() {
                                             <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                                         </button>
                                     </div>
-                                    <form onSubmit={handleProductSave} className="p-6 space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                                            <input type="text" required value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))}
-                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="e.g. King Coconut" />
+                                    <form onSubmit={handleProductSave} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                                                <input type="text" required value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="e.g. King Coconut" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                                                <input type="text" value={productForm.slug} onChange={e => setProductForm(p => ({ ...p, slug: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="Auto-generated from name" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                                                <select value={productForm.category} onChange={e => setProductForm(p => ({ ...p, category: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white">
+                                                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                                                </select>
+                                            </div>
+                                            <label className="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-700">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={productForm.exportAvailability}
+                                                    onChange={e => setProductForm(p => ({ ...p, exportAvailability: e.target.checked }))}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                />
+                                                Available for public catalog
+                                            </label>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                            <select value={productForm.category} onChange={e => setProductForm(p => ({ ...p, category: e.target.value }))}
-                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-                                                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                                            <textarea required rows={3} value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))}
-                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="Short product description..." />
-                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Image URL *</label>
                                             <input type="url" required value={productForm.imageUrl} onChange={e => setProductForm(p => ({ ...p, imageUrl: e.target.value }))}
                                                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="https://..." />
+                                            {productForm.imageUrl && (
+                                                <img src={productForm.imageUrl} alt="" className="mt-3 h-28 w-full object-cover rounded-xl border border-gray-100" />
+                                            )}
                                         </div>
-                                        <div className="flex gap-3 pt-2">
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+                                            <textarea rows={2} value={productForm.shortDescription} onChange={e => setProductForm(p => ({ ...p, shortDescription: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="One or two lines for product cards..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Description *</label>
+                                            <textarea required rows={4} value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="Detailed product description..." />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Scientific Name</label>
+                                                <input value={productForm.scientificName} onChange={e => setProductForm(p => ({ ...p, scientificName: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">HS Code</label>
+                                                <input value={productForm.hsCode} onChange={e => setProductForm(p => ({ ...p, hsCode: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
+                                                <input value={productForm.origin} onChange={e => setProductForm(p => ({ ...p, origin: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+                                                <input value={productForm.availability} onChange={e => setProductForm(p => ({ ...p, availability: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="Year-round availability" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Packaging</label>
+                                                <input value={productForm.packaging} onChange={e => setProductForm(p => ({ ...p, packaging: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Shelf Life</label>
+                                                <input value={productForm.shelfLife} onChange={e => setProductForm(p => ({ ...p, shelfLife: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Storage</label>
+                                                <input value={productForm.storage} onChange={e => setProductForm(p => ({ ...p, storage: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Supply Capacity</label>
+                                                <input value={productForm.supplyCapacity} onChange={e => setProductForm(p => ({ ...p, supplyCapacity: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Price Note</label>
+                                            <input value={productForm.price} onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="For pricing details, please contact us." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Export Information</label>
+                                            <textarea rows={2} value={productForm.exportInfo} onChange={e => setProductForm(p => ({ ...p, exportInfo: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Benefits</label>
+                                                <textarea rows={4} value={productForm.benefits} onChange={e => setProductForm(p => ({ ...p, benefits: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="One per line" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Certifications</label>
+                                                <textarea rows={4} value={productForm.certifications} onChange={e => setProductForm(p => ({ ...p, certifications: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="One per line" />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-3 pt-2 sticky bottom-0 bg-white border-t border-gray-100 py-4">
                                             <button type="submit" disabled={actionLoading.productSave}
                                                 className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
                                                 {actionLoading.productSave ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -357,7 +506,7 @@ export default function AdminDashboard() {
                                                     <img src={product.imageUrl} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-900">{product.name}</p>
-                                                        <p className="text-xs text-gray-400 truncate max-w-[200px]">{product.description}</p>
+                                                        <p className="text-xs text-gray-400 truncate max-w-[200px]">{product.shortDescription || product.description}</p>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
