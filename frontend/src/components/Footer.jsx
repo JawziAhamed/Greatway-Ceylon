@@ -95,7 +95,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-primary-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-primary-300">
-                    <p>&copy; {new Date().getFullYear()} Greatway Import and Exports. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Greatway Ceylon. All rights reserved.</p>
                     <div className="flex space-x-4 mt-4 md:mt-0">
                         <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
