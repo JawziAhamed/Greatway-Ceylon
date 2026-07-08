@@ -125,7 +125,7 @@ export default function Contact() {
                                 rel="noopener noreferrer"
                                 className="mt-10 flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg"
                             >
-                                <WhatsAppMark className="w-6 h-6" />
+                                <WhatsAppMark variant="glyph" className="w-6 h-6" />
                                 WhatsApp Us Now
                             </a>
                         </div>
