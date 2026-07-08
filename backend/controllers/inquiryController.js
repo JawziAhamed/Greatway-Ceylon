@@ -1,11 +1,16 @@
 const Inquiry = require('../models/Inquiry');
 const twilio = require('twilio');
 
+const normalizeWhatsAppNumber = (number) => {
+    const value = number || '+94725737391';
+    return value.startsWith('whatsapp:') ? value : `whatsapp:${value}`;
+};
+
 const sendWhatsAppNotification = async (inquiry) => {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromNumber = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886'; // Twilio sandbox default
-    const toNumber = 'whatsapp:+94725737391'; // User's WhatsApp number
+    const toNumber = normalizeWhatsAppNumber(process.env.OFFICIAL_WHATSAPP_NUMBER);
 
     if (!accountSid || !authToken) {
         console.warn('[Twilio] Credentials not configured in backend/.env. Skipping WhatsApp notification.');
@@ -19,14 +24,15 @@ const sendWhatsAppNotification = async (inquiry) => {
             `*Email:* ${inquiry.email}\n` +
             `*Phone:* ${inquiry.phone}\n` +
             `*Product:* ${inquiry.productOfInterest || 'General Inquiry'}\n` +
-            `*Message:* ${inquiry.message}`;
+            `*Message:* ${inquiry.message}\n` +
+            `*Submitted:* ${new Date(inquiry.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Colombo' })}`;
 
         await client.messages.create({
             body: text,
             from: fromNumber,
             to: toNumber
         });
-        console.log('[Twilio] WhatsApp notification sent successfully to +94725737391');
+        console.log(`[Twilio] WhatsApp inquiry notification sent successfully to ${toNumber}`);
     } catch (error) {
         console.error('[Twilio] Error sending WhatsApp notification:', error.message);
     }
