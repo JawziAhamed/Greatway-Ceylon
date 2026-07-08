@@ -1,7 +1,7 @@
 import whatsappIcon from '../assets/whatsapp-icon.png';
 
 export default function WhatsAppButton() {
-    const whatsappNumber = "+971547802290"; // UAE number
+    const whatsappNumber = "94725737391"; // Official WhatsApp number
     const whatsappMessage = encodeURIComponent("Hello Greatway Exports, I would like to inquire about your products.");
 
     return (

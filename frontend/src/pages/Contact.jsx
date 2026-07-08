@@ -119,7 +119,7 @@ export default function Contact() {
 
                             {/* WhatsApp Direct Link */}
                             <a
-                                href="https://wa.me/971547802290?text=Hello%20Greatway%20Exports%2C%20I%20would%20like%20to%20inquire%20about%20your%20products."
+                                href="https://wa.me/94725737391?text=Hello%20Greatway%20Exports%2C%20I%20would%20like%20to%20inquire%20about%20your%20products."
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="mt-10 flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg"

@@ -36,6 +36,16 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/greatway-exports
 JWT_SECRET=your_secure_jwt_secret
 NODE_ENV=development
+
+# WhatsApp Business Cloud API notifications
+WHATSAPP_ACCESS_TOKEN=your_meta_cloud_api_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_meta_phone_number_id
+WHATSAPP_GRAPH_VERSION=v23.0
+OFFICIAL_WHATSAPP_NUMBER=+94725737391
+
+# Optional, recommended for production business-initiated notifications
+WHATSAPP_TEMPLATE_NAME=new_inquiry_notification
+WHATSAPP_TEMPLATE_LANGUAGE=en_US
 ```
 
 ### Frontend (`frontend/.env`)
