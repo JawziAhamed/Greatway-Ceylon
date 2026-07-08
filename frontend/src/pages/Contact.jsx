@@ -1,31 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { submitInquiry } from '../utils/api';
 
 export default function Contact() {
     const [searchParams] = useSearchParams();
+    const product = searchParams.get('product') || '';
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
-        productOfInterest: '',
-        message: ''
+        productOfInterest: product,
+        message: product
+            ? `I am interested in importing ${product}. Please provide availability and pricing details.`
+            : ''
     });
     const [status, setStatus] = useState('idle'); // idle | loading | success | error
     const [errorMsg, setErrorMsg] = useState('');
-
-    // Pre-fill product from URL param (e.g. /contact?product=Cinnamon)
-    useEffect(() => {
-        const product = searchParams.get('product');
-        if (product) {
-            setFormData(prev => ({
-                ...prev,
-                productOfInterest: product,
-                message: `I am interested in importing ${product}. Please provide availability and pricing details.`
-            }));
-        }
-    }, [searchParams]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -133,8 +124,8 @@ export default function Contact() {
                                 rel="noopener noreferrer"
                                 className="mt-10 flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" className="w-6 h-6" aria-hidden="true">
+                                    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32 101 32 1 132 1 255c0 39.2 10.2 77.5 29.6 111.3L0 480l116.7-30.6c32.4 17.7 68.9 27 106.9 27h.1c122.9 0 222.9-100 222.9-223 0-59.3-23.1-115.1-65.7-156.3ZM223.7 438.7c-33.9 0-67.1-9.1-96-26.2l-6.9-4.1-69.2 18.2 18.5-67.5-4.5-7C46.9 322.4 37 289 37 255 37 151.9 120.9 68 224 68c49.9 0 96.8 19.5 132.1 54.8 35.3 35.4 54.7 82.3 54.7 132.2-.1 103.1-84 183.7-187.1 183.7Zm102.6-137.6c-5.6-2.8-33.2-16.4-38.3-18.2-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18.2-17.6 22-3.2 3.7-6.5 4.2-12.1 1.4-33.2-16.6-55-29.6-76.8-67-5.8-10 5.8-9.3 16.6-30.9 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2s-9.7 1.4-14.8 6.9c-5.1 5.6-19.4 19-19.4 46.3s19.9 53.7 22.7 57.4c2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 33.2-13.6 37.9-26.7 4.6-13.1 4.6-24.3 3.2-26.7-1.3-2.5-5-3.9-10.6-6.7Z" />
                                 </svg>
                                 WhatsApp Us Now
                             </a>
