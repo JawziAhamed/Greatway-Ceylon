@@ -31,7 +31,7 @@ export default function Navbar() {
                     <Link to="/" className="flex items-center space-x-2 group">
                         <img src={logo} alt="Greatway Export Logo" className="h-10 w-10 object-contain rounded-full" />
                         <span className="font-heading font-bold text-xl text-primary-900 hidden sm:block">
-                            Greatway <span className="text-gold-600">Export</span>
+                            Greatway <span className="text-gold-600">Ceylon</span>
                         </span>
                     </Link>
 

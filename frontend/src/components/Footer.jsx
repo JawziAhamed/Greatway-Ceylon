@@ -12,7 +12,7 @@ export default function Footer() {
                         <Link to="/" className="flex items-center space-x-2">
                             <img src={logo} alt="Greatway Export Logo" className="h-10 w-10 object-contain rounded-full bg-white p-1" />
                             <span className="font-heading font-bold text-2xl text-white">
-                                Greatway <span className="text-gold-500">Export</span>
+                                Greatway <span className="text-gold-500">Ceylon</span>
                             </span>
                         </Link>
                         <p className="text-primary-200 text-sm leading-relaxed">
@@ -75,6 +75,7 @@ export default function Footer() {
                                 <Phone className="text-gold-500 mr-3 mt-1 shrink-0" size={18} />
                                 <div>
                                     <p className="text-sm font-semibold text-white">UAE Contact</p>
+                                    <p className="text-primary-200 text-sm">+94 76 775 2181</p>
                                     <p className="text-primary-200 text-sm">+971 54 780 2290</p>
                                 </div>
                             </li>
@@ -95,7 +96,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-primary-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-primary-300">
-                    <p>&copy; {new Date().getFullYear()} Greatway Import and Exports. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Greatway Ceylon. All rights reserved.</p>
                     <div className="flex space-x-4 mt-4 md:mt-0">
                         <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>

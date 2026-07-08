@@ -71,9 +71,9 @@ export default function Contact() {
                                         <Phone className="w-5 h-5 text-gold-400" />
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-lg mb-1 text-primary-50">🇦🇪 UAE Office (Primary)</h4>
-                                        <a href="tel:+971547802290" className="text-primary-200 hover:text-gold-400 transition-colors">
-                                            +971 54 780 2290
+                                        <h4 className="font-semibold text-lg mb-1 text-primary-50">🇦🇪 UAE(Primary)</h4>
+                                        <a href="tel:+94767752181" className="text-primary-200 hover:text-gold-400 transition-colors">
+                                            +94 76 775 2181
                                         </a>
                                     </div>
                                 </div>
