@@ -7,12 +7,21 @@ exports.createInquiry = async (req, res) => {
         const newInquiry = new Inquiry(req.body);
         const savedInquiry = await newInquiry.save();
 
-        // Send WhatsApp notification in the background without delaying the user response.
-        sendInquiryNotification(savedInquiry).catch(err => {
+        let whatsappNotification = { sent: false, skipped: false };
+        try {
+            whatsappNotification = await sendInquiryNotification(savedInquiry);
+        } catch (err) {
             console.error('[WhatsApp Cloud API] Failed to send inquiry notification:', err.message);
-        });
+        }
 
-        res.status(201).json({ message: 'Inquiry submitted successfully', inquiry: savedInquiry });
+        res.status(201).json({
+            message: 'Inquiry submitted successfully',
+            inquiry: savedInquiry,
+            whatsappNotification: {
+                sent: Boolean(whatsappNotification.sent),
+                skipped: Boolean(whatsappNotification.skipped),
+            },
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
