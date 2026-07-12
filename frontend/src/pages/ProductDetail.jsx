@@ -26,6 +26,8 @@ const normalizeProduct = (product, fallbackSlug) => ({
   slug: product.slug || fallbackSlug,
   image: product.image || product.imageUrl,
   desc: product.desc || product.shortDescription || product.description,
+  shortDescription: product.shortDescription || product.desc,
+  description: product.description || product.desc || product.shortDescription,
   origin: product.origin || 'Sri Lanka',
 });
 
@@ -89,6 +91,12 @@ export default function ProductDetail() {
   }
 
   const specRows = [
+    { icon: <Package size={16} />, label: 'Category', value: product.category },
+    {
+      icon: <CheckCircle size={16} />,
+      label: 'Catalog Status',
+      value: product.exportAvailability === false ? 'Unavailable for public catalog' : 'Available for public catalog',
+    },
     { icon: <MapPin size={16} />, label: 'Country of Origin', value: product.origin },
     { icon: <Hash size={16} />, label: 'HS Code', value: product.hsCode },
     { icon: <Clock size={16} />, label: 'Availability', value: product.availability },
@@ -132,6 +140,11 @@ export default function ProductDetail() {
             <h1 className="text-4xl md:text-5xl font-extrabold text-white font-heading mb-2">
               {product.name}
             </h1>
+            {product.shortDescription && (
+              <p className="text-primary-100 text-lg leading-relaxed max-w-3xl mb-3">
+                {product.shortDescription}
+              </p>
+            )}
             {product.scientificName && (
               <p className="text-primary-300 italic text-lg">{product.scientificName}</p>
             )}

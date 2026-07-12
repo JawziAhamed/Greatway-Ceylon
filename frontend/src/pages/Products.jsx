@@ -147,10 +147,16 @@ export default function Products() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {filteredProducts.map((product) => {
                             const productId = product._id || product.id;
+                            const productSlug = product.slug || slugify(product.name) || productId;
                             const productImage = product.imageUrl || product.image;
                             const productDesc = product.shortDescription || product.desc || product.description;
                             return (
-                                <div key={productId} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-2">
+                                <Link
+                                    key={productId}
+                                    to={`/products/${productSlug}`}
+                                    className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-2 focus:outline-none focus:ring-4 focus:ring-primary-200"
+                                    aria-label={`View details for ${product.name}`}
+                                >
                                     <div className="relative h-56 overflow-hidden">
                                         <img
                                             src={productImage}
@@ -165,14 +171,11 @@ export default function Products() {
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3 className="text-xl font-bold text-gray-900 mb-2 font-heading">{product.name}</h3>
                                         <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-grow">{productDesc}</p>
-                                        <Link
-                                            to={`/contact?product=${encodeURIComponent(product.name)}`}
-                                            className="w-full bg-primary-50 hover:bg-primary-700 text-primary-700 hover:text-white border border-primary-200 hover:border-transparent font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center group/btn"
-                                        >
-                                            Send Inquiry <ArrowRight size={18} className="ml-2 mt-0.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
-                                        </Link>
+                                        <span className="w-full bg-primary-50 group-hover:bg-primary-700 text-primary-700 group-hover:text-white border border-primary-200 group-hover:border-transparent font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center">
+                                            View Details <ArrowRight size={18} className="ml-2 mt-0.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                        </span>
                                     </div>
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>
