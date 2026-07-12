@@ -9,8 +9,28 @@ import {
     getProducts, createProduct, updateProduct, deleteProduct,
     getInquiries, updateInquiryStatus, deleteInquiry
 } from '../utils/api';
+import { allProducts as catalogProducts } from '../data/products';
 
 const CATEGORIES = ['Fresh Fruits', 'Fresh Vegetables', 'Spices', 'Nuts', 'Tea'];
+
+const getProductKey = (product) => product.slug || product._id || product.id || product.name;
+
+const toAdminProduct = (product) => ({
+    ...product,
+    _catalogOnly: true,
+    imageUrl: product.imageUrl || product.image,
+    shortDescription: product.shortDescription || product.desc,
+    exportAvailability: product.exportAvailability !== false,
+});
+
+const mergeManagedAndCatalogProducts = (managedProducts = []) => {
+    const managedKeys = new Set(managedProducts.map(getProductKey).filter(Boolean));
+    const catalogOnlyProducts = catalogProducts
+        .map(toAdminProduct)
+        .filter(product => !managedKeys.has(getProductKey(product)));
+
+    return [...managedProducts, ...catalogOnlyProducts];
+};
 
 const getEmptyProductForm = () => ({
     name: '',
@@ -76,8 +96,11 @@ export default function AdminDashboard() {
         setProductsLoading(true);
         try {
             const data = await getProducts({ includeUnavailable: true });
-            setProducts(data);
-        } catch { setError('Failed to load products.'); }
+            setProducts(mergeManagedAndCatalogProducts(data || []));
+        } catch {
+            setProducts(catalogProducts.map(toAdminProduct));
+            setError('Failed to load managed products. Showing built-in catalog products only.');
+        }
         finally { setProductsLoading(false); }
     }, []);
 
@@ -117,8 +140,8 @@ export default function AdminDashboard() {
                 const updated = await updateProduct(editingProduct._id, payload);
                 setProducts(p => p.map(x => x._id === editingProduct._id ? updated : x));
             } else {
-                const created = await createProduct(payload);
-                setProducts(p => [created, ...p]);
+                await createProduct(payload);
+                await loadProducts();
             }
             setShowProductForm(false);
             setEditingProduct(null);
@@ -138,7 +161,7 @@ export default function AdminDashboard() {
     };
 
     const openEditProduct = (product) => {
-        setEditingProduct(product);
+        setEditingProduct(product._id ? product : null);
         setProductForm({
             name: product.name || '',
             slug: product.slug || '',
@@ -327,7 +350,7 @@ export default function AdminDashboard() {
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900 font-heading">Products Management</h1>
-                                <p className="text-gray-500 text-sm">{products.length} products in database</p>
+                                <p className="text-gray-500 text-sm">{products.length} products in catalog and database</p>
                             </div>
                             <button
                                 onClick={() => { setShowProductForm(true); setEditingProduct(null); setProductForm(getEmptyProductForm()); }}
@@ -501,11 +524,18 @@ export default function AdminDashboard() {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-100">
                                         {products.map(product => (
-                                            <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                                            <tr key={product._id || `catalog-${product.slug || product.id}`} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 flex items-center gap-3">
                                                     <img src={product.imageUrl} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                                                            {product._catalogOnly && (
+                                                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-gold-100 text-gold-700">
+                                                                    Catalog
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <p className="text-xs text-gray-400 truncate max-w-[200px]">{product.shortDescription || product.description}</p>
                                                     </div>
                                                 </td>
@@ -516,13 +546,19 @@ export default function AdminDashboard() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <button onClick={() => openEditProduct(product)} className="text-primary-600 hover:text-primary-900 mr-4 p-1.5 hover:bg-primary-50 rounded-lg transition-colors">
+                                                    <button
+                                                        onClick={() => openEditProduct(product)}
+                                                        className="text-primary-600 hover:text-primary-900 mr-4 p-1.5 hover:bg-primary-50 rounded-lg transition-colors"
+                                                        title={product._catalogOnly ? 'Create a managed database version from this catalog product' : 'Edit product'}
+                                                    >
                                                         <Edit className="h-4 w-4" />
                                                     </button>
-                                                    <button onClick={() => handleDeleteProduct(product._id)} disabled={actionLoading[product._id]}
-                                                        className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
-                                                        {actionLoading[product._id] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                                    </button>
+                                                    {!product._catalogOnly && (
+                                                        <button onClick={() => handleDeleteProduct(product._id)} disabled={actionLoading[product._id]}
+                                                            className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
+                                                            {actionLoading[product._id] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
