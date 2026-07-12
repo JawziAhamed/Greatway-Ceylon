@@ -20,6 +20,18 @@ npm start
 # Runs on http://localhost:5000
 ```
 
+### Seed Catalog Products Into MongoDB
+```bash
+cd backend
+npm run seed:products
+# Creates missing built-in catalog products without overwriting admin edits
+```
+
+To refresh built-in catalog product data and overwrite matching slugs:
+```bash
+npm run seed:products:force
+```
+
 ### 2. Start the Frontend
 ```bash
 cd frontend

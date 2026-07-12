@@ -14,13 +14,13 @@ const slugify = (value = '') =>
         .replace(/^-+|-+$/g, '');
 
 const mergeStaticAndManagedProducts = (managedProducts = []) => {
-    const existingProductKeys = new Set(allProducts.map(product => slugify(product.name)));
-    const newManagedProducts = managedProducts.filter((product) => {
+    const managedProductKeys = new Set(managedProducts.map(product => product.slug || slugify(product.name)));
+    const missingStaticProducts = allProducts.filter((product) => {
         const productKey = product.slug || slugify(product.name);
-        return productKey && !existingProductKeys.has(productKey);
+        return productKey && !managedProductKeys.has(productKey);
     });
 
-    return [...allProducts, ...newManagedProducts];
+    return [...managedProducts, ...missingStaticProducts];
 };
 
 const allProducts = [

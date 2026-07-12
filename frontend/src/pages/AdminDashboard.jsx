@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Package, MessageSquare, LogOut, Trash2, Plus, Edit,
-    CheckCircle, Loader2, X, Save, AlertTriangle
+    CheckCircle, Loader2, X, Save, AlertTriangle, UserRound, ShieldCheck
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import {
     getProducts, createProduct, updateProduct, deleteProduct,
-    getInquiries, updateInquiryStatus, deleteInquiry
+    getInquiries, updateInquiryStatus, deleteInquiry,
+    getAdminProfile, updateAdminProfile
 } from '../utils/api';
 import { allProducts as catalogProducts } from '../data/products';
 
@@ -68,6 +69,16 @@ const statusColors = {
     replied: 'bg-green-100 text-green-800',
 };
 
+const getEmptyProfileForm = () => ({
+    username: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+});
+
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('inquiries');
     const navigate = useNavigate();
@@ -86,6 +97,9 @@ export default function AdminDashboard() {
     // General state
     const [actionLoading, setActionLoading] = useState({});
     const [error, setError] = useState('');
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [profileForm, setProfileForm] = useState(getEmptyProfileForm);
+    const [profileMessage, setProfileMessage] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -113,10 +127,31 @@ export default function AdminDashboard() {
         finally { setInquiriesLoading(false); }
     }, []);
 
+    const loadProfile = useCallback(async () => {
+        setProfileLoading(true);
+        try {
+            const data = await getAdminProfile();
+            setProfileForm({
+                username: data.username || '',
+                fullName: data.fullName || '',
+                email: data.email || '',
+                phone: data.phone || '',
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+        } catch (err) {
+            setError(err.message || 'Failed to load admin profile.');
+        } finally {
+            setProfileLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         if (activeTab === 'products') loadProducts();
         if (activeTab === 'inquiries') loadInquiries();
-    }, [activeTab, loadProducts, loadInquiries]);
+        if (activeTab === 'profile') loadProfile();
+    }, [activeTab, loadProducts, loadInquiries, loadProfile]);
 
     const handleLogout = () => {
         localStorage.removeItem('adminToken');
@@ -205,9 +240,50 @@ export default function AdminDashboard() {
         finally { setActionLoading(p => ({ ...p, [`del_${id}`]: false })); }
     };
 
+    const handleProfileSave = async (e) => {
+        e.preventDefault();
+        setError('');
+        setProfileMessage('');
+
+        if (profileForm.newPassword && profileForm.newPassword !== profileForm.confirmPassword) {
+            setError('New password and confirmation do not match.');
+            return;
+        }
+
+        setActionLoading(p => ({ ...p, profileSave: true }));
+
+        try {
+            const payload = {
+                username: profileForm.username,
+                fullName: profileForm.fullName,
+                email: profileForm.email,
+                phone: profileForm.phone,
+                currentPassword: profileForm.currentPassword,
+                newPassword: profileForm.newPassword,
+            };
+            const data = await updateAdminProfile(payload);
+            if (data.token) localStorage.setItem('adminToken', data.token);
+            setProfileForm({
+                username: data.admin.username || '',
+                fullName: data.admin.fullName || '',
+                email: data.admin.email || '',
+                phone: data.admin.phone || '',
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+            setProfileMessage('Admin profile updated successfully.');
+        } catch (err) {
+            setError(err.message || 'Failed to update admin profile.');
+        } finally {
+            setActionLoading(p => ({ ...p, profileSave: false }));
+        }
+    };
+
     const navItems = [
         { id: 'inquiries', icon: MessageSquare, label: 'View Inquiries' },
         { id: 'products', icon: Package, label: 'Manage Products' },
+        { id: 'profile', icon: UserRound, label: 'Admin Profile' },
     ];
 
     return (
@@ -565,6 +641,149 @@ export default function AdminDashboard() {
                                     </tbody>
                                 </table>
                             </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ===== PROFILE TAB ===== */}
+                {activeTab === 'profile' && (
+                    <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 font-heading">Admin Profile</h1>
+                                <p className="text-gray-500 text-sm">Update login details and contact information for the admin account.</p>
+                            </div>
+                            <div className="inline-flex items-center gap-2 bg-primary-50 text-primary-700 border border-primary-100 rounded-full px-4 py-2 text-sm font-semibold self-start">
+                                <ShieldCheck className="w-4 h-4" /> Protected
+                            </div>
+                        </div>
+
+                        {profileLoading ? (
+                            <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary-600" /></div>
+                        ) : (
+                            <form onSubmit={handleProfileSave} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl">
+                                <div className="p-6 md:p-8 border-b border-gray-100 bg-gradient-to-br from-primary-50 to-white">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-14 w-14 rounded-2xl bg-primary-700 text-white flex items-center justify-center shadow-sm">
+                                            <UserRound className="w-7 h-7" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 font-heading">
+                                                {profileForm.fullName || profileForm.username || 'Admin Account'}
+                                            </h2>
+                                            <p className="text-sm text-gray-500">Changes apply to future admin logins.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 md:p-8 space-y-6">
+                                    {profileMessage && (
+                                        <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl flex items-center gap-2 text-sm font-medium">
+                                            <CheckCircle className="w-4 h-4" /> {profileMessage}
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={profileForm.username}
+                                                onChange={e => setProfileForm(p => ({ ...p, username: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                            <input
+                                                type="text"
+                                                value={profileForm.fullName}
+                                                onChange={e => setProfileForm(p => ({ ...p, fullName: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                placeholder="Greatway Admin"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <input
+                                                type="email"
+                                                value={profileForm.email}
+                                                onChange={e => setProfileForm(p => ({ ...p, email: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                placeholder="admin@greatwayceylon.com"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                            <input
+                                                type="tel"
+                                                value={profileForm.phone}
+                                                onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
+                                                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                placeholder="+94..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 pt-6">
+                                        <h3 className="text-sm font-bold text-gray-900 mb-4">Security</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password *</label>
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    value={profileForm.currentPassword}
+                                                    onChange={e => setProfileForm(p => ({ ...p, currentPassword: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                    placeholder="Required to save"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                                <input
+                                                    type="password"
+                                                    minLength={8}
+                                                    value={profileForm.newPassword}
+                                                    onChange={e => setProfileForm(p => ({ ...p, newPassword: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                    placeholder="At least 8 characters"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                                <input
+                                                    type="password"
+                                                    minLength={8}
+                                                    value={profileForm.confirmPassword}
+                                                    onChange={e => setProfileForm(p => ({ ...p, confirmPassword: e.target.value }))}
+                                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                                                    placeholder="Repeat new password"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="px-6 md:px-8 py-5 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={loadProfile}
+                                        className="px-5 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-600 hover:bg-white transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={actionLoading.profileSave}
+                                        className="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    >
+                                        {actionLoading.profileSave ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        Save Profile
+                                    </button>
+                                </div>
+                            </form>
                         )}
                     </div>
                 )}
