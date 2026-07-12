@@ -9,6 +9,20 @@ const getHeaders = (auth = false) => {
     return headers;
 };
 
+const throwApiError = async (res, fallbackMessage) => {
+    let message = fallbackMessage;
+    try {
+        const data = await res.json();
+        message = data.message || message;
+    } catch {
+        // Keep the fallback message if the server did not return JSON.
+    }
+
+    const error = new Error(message);
+    error.status = res.status;
+    throw error;
+};
+
 // --- Inquiries ---
 export const submitInquiry = async (data) => {
     const res = await fetch(`${API_BASE}/inquiries`, {
@@ -16,7 +30,7 @@ export const submitInquiry = async (data) => {
         headers: getHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to submit inquiry');
+    if (!res.ok) await throwApiError(res, 'Failed to submit inquiry');
     return res.json();
 };
 
@@ -24,7 +38,7 @@ export const getInquiries = async () => {
     const res = await fetch(`${API_BASE}/inquiries`, {
         headers: getHeaders(true),
     });
-    if (!res.ok) throw new Error('Failed to fetch inquiries');
+    if (!res.ok) await throwApiError(res, 'Failed to fetch inquiries');
     return res.json();
 };
 
@@ -34,7 +48,7 @@ export const updateInquiryStatus = async (id, status) => {
         headers: getHeaders(true),
         body: JSON.stringify({ status }),
     });
-    if (!res.ok) throw new Error('Failed to update inquiry');
+    if (!res.ok) await throwApiError(res, 'Failed to update inquiry');
     return res.json();
 };
 
@@ -43,7 +57,7 @@ export const deleteInquiry = async (id) => {
         method: 'DELETE',
         headers: getHeaders(true),
     });
-    if (!res.ok) throw new Error('Failed to delete inquiry');
+    if (!res.ok) await throwApiError(res, 'Failed to delete inquiry');
     return res.json();
 };
 
@@ -53,13 +67,13 @@ export const getProducts = async ({ includeUnavailable = false } = {}) => {
     const res = await fetch(`${API_BASE}/products${query}`, {
         headers: getHeaders(includeUnavailable),
     });
-    if (!res.ok) throw new Error('Failed to fetch products');
+    if (!res.ok) await throwApiError(res, 'Failed to fetch products');
     return res.json();
 };
 
 export const getProduct = async (identifier) => {
     const res = await fetch(`${API_BASE}/products/${identifier}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch product');
+    if (!res.ok) await throwApiError(res, 'Failed to fetch product');
     return res.json();
 };
 
@@ -69,7 +83,7 @@ export const createProduct = async (data) => {
         headers: getHeaders(true),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to create product');
+    if (!res.ok) await throwApiError(res, 'Failed to create product');
     return res.json();
 };
 
@@ -79,7 +93,7 @@ export const updateProduct = async (id, data) => {
         headers: getHeaders(true),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to update product');
+    if (!res.ok) await throwApiError(res, 'Failed to update product');
     return res.json();
 };
 
@@ -88,7 +102,7 @@ export const deleteProduct = async (id) => {
         method: 'DELETE',
         headers: getHeaders(true),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to delete product');
+    if (!res.ok) await throwApiError(res, 'Failed to delete product');
     return res.json();
 };
 
@@ -99,7 +113,7 @@ export const adminLogin = async (username, password) => {
         headers: getHeaders(),
         body: JSON.stringify({ username, password }),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Login failed');
+    if (!res.ok) await throwApiError(res, 'Login failed');
     return res.json();
 };
 
@@ -107,7 +121,7 @@ export const getAdminProfile = async () => {
     const res = await fetch(`${API_BASE}/admin/profile`, {
         headers: getHeaders(true),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to fetch admin profile');
+    if (!res.ok) await throwApiError(res, 'Failed to fetch admin profile');
     return res.json();
 };
 
@@ -117,6 +131,6 @@ export const updateAdminProfile = async (data) => {
         headers: getHeaders(true),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).message || 'Failed to update admin profile');
+    if (!res.ok) await throwApiError(res, 'Failed to update admin profile');
     return res.json();
 };

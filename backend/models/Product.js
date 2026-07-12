@@ -22,7 +22,9 @@ const productSchema = new mongoose.Schema({
     certifications: [{ type: String, trim: true }],
     nutritionPer: { type: String, trim: true },
     nutrition: { type: Map, of: String, default: undefined },
-    exportAvailability: { type: Boolean, default: true }
+    exportAvailability: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

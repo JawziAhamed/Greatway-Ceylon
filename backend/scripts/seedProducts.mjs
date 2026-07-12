@@ -28,6 +28,8 @@ const toProductPayload = (product) => ({
     nutritionPer: product.nutritionPer,
     nutrition: product.nutrition,
     exportAvailability: product.exportAvailability !== false,
+    isDeleted: false,
+    deletedAt: null,
 });
 
 const seedProducts = async () => {

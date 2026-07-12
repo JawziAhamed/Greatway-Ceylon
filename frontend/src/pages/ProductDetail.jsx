@@ -35,13 +35,15 @@ export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const fallbackProduct = getProductBySlug(slug);
-  const [remoteProduct, setRemoteProduct] = useState({ slug: null, product: null });
-  const product = remoteProduct.slug === slug && remoteProduct.product
+  const [remoteProduct, setRemoteProduct] = useState({ slug: null, product: null, error: null });
+  const backendChecked = remoteProduct.slug === slug;
+  const canUseFallback = !backendChecked || !remoteProduct.error?.status;
+  const product = backendChecked && remoteProduct.product
     ? remoteProduct.product
-    : fallbackProduct
+    : canUseFallback && fallbackProduct
       ? normalizeProduct(fallbackProduct, slug)
       : null;
-  const loading = !product && remoteProduct.slug !== slug;
+  const loading = !product && !backendChecked;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -52,10 +54,10 @@ export default function ProductDetail() {
 
     getProduct(slug)
       .then((data) => {
-        if (active) setRemoteProduct({ slug, product: normalizeProduct(data, slug) });
+        if (active) setRemoteProduct({ slug, product: normalizeProduct(data, slug), error: null });
       })
-      .catch(() => {
-        if (active) setRemoteProduct({ slug, product: null });
+      .catch((error) => {
+        if (active) setRemoteProduct({ slug, product: null, error });
       });
 
     return () => { active = false; };
