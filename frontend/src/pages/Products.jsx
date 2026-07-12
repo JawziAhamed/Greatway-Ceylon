@@ -13,16 +13,6 @@ const slugify = (value = '') =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-const mergeStaticAndManagedProducts = (managedProducts = []) => {
-    const managedProductKeys = new Set(managedProducts.map(product => product.slug || slugify(product.name)));
-    const missingStaticProducts = allProducts.filter((product) => {
-        const productKey = product.slug || slugify(product.name);
-        return productKey && !managedProductKeys.has(productKey);
-    });
-
-    return [...managedProducts, ...missingStaticProducts];
-};
-
 const allProducts = [
     // Fresh Fruits
     { id: 1, name: 'King Coconut', category: 'Fresh Fruits', image: 'https://i.pinimg.com/1200x/17/9e/c8/179ec8f821aef2b1b65ddb7196aa3eaf.jpg', desc: 'Premium sweet water coconuts, harvested fresh from the palm.' },
@@ -62,7 +52,7 @@ export default function Products() {
         const fetchProducts = async () => {
             try {
                 const data = await getProducts();
-                setProducts(mergeStaticAndManagedProducts(data || []));
+                setProducts(data || []);
             } catch (err) {
                 console.error("Failed to fetch products from backend, falling back to static list", err);
                 setProducts(allProducts);

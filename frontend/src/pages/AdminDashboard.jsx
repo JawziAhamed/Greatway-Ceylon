@@ -14,8 +14,6 @@ import { allProducts as catalogProducts } from '../data/products';
 
 const CATEGORIES = ['Fresh Fruits', 'Fresh Vegetables', 'Spices', 'Nuts', 'Tea'];
 
-const getProductKey = (product) => product.slug || product._id || product.id || product.name;
-
 const toAdminProduct = (product) => ({
     ...product,
     _catalogOnly: true,
@@ -23,15 +21,6 @@ const toAdminProduct = (product) => ({
     shortDescription: product.shortDescription || product.desc,
     exportAvailability: product.exportAvailability !== false,
 });
-
-const mergeManagedAndCatalogProducts = (managedProducts = []) => {
-    const managedKeys = new Set(managedProducts.map(getProductKey).filter(Boolean));
-    const catalogOnlyProducts = catalogProducts
-        .map(toAdminProduct)
-        .filter(product => !managedKeys.has(getProductKey(product)));
-
-    return [...managedProducts, ...catalogOnlyProducts];
-};
 
 const getEmptyProductForm = () => ({
     name: '',
@@ -110,7 +99,7 @@ export default function AdminDashboard() {
         setProductsLoading(true);
         try {
             const data = await getProducts({ includeUnavailable: true });
-            setProducts(mergeManagedAndCatalogProducts(data || []));
+            setProducts(data || []);
         } catch {
             setProducts(catalogProducts.map(toAdminProduct));
             setError('Failed to load managed products. Showing built-in catalog products only.');
@@ -190,7 +179,7 @@ export default function AdminDashboard() {
         setActionLoading(p => ({ ...p, [id]: true }));
         try {
             await deleteProduct(id);
-            setProducts(p => p.filter(x => x._id !== id));
+            await loadProducts();
         } catch (err) { setError(err.message); }
         finally { setActionLoading(p => ({ ...p, [id]: false })); }
     };
@@ -426,7 +415,7 @@ export default function AdminDashboard() {
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900 font-heading">Products Management</h1>
-                                <p className="text-gray-500 text-sm">{products.length} products in catalog and database</p>
+                                <p className="text-gray-500 text-sm">{products.length} managed products in MongoDB</p>
                             </div>
                             <button
                                 onClick={() => { setShowProductForm(true); setEditingProduct(null); setProductForm(getEmptyProductForm()); }}

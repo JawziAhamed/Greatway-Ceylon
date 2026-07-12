@@ -91,11 +91,15 @@ const getUniqueSlug = async (value, excludeId) => {
     return `${baseSlug}-${suffix}`;
 };
 
+const notDeletedFilter = { isDeleted: { $ne: true } };
+
 // Get all products
 exports.getProducts = async (req, res) => {
     try {
         const includeUnavailable = req.query.includeUnavailable === 'true';
-        const filter = includeUnavailable ? {} : { exportAvailability: { $ne: false } };
+        const filter = includeUnavailable
+            ? { ...notDeletedFilter }
+            : { ...notDeletedFilter, exportAvailability: { $ne: false } };
         const products = await Product.find(filter).sort({ createdAt: -1 });
         res.status(200).json(products);
     } catch (error) {
@@ -113,6 +117,7 @@ exports.getProduct = async (req, res) => {
             : { slug: identifier };
 
         if (!includeUnavailable) filter.exportAvailability = { $ne: false };
+        filter.isDeleted = { $ne: true };
 
         const product = await Product.findOne(filter);
         if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -127,7 +132,22 @@ exports.getProduct = async (req, res) => {
 exports.createProduct = async (req, res) => {
     try {
         const payload = normalizeProductPayload(req.body);
-        payload.slug = await getUniqueSlug(payload.slug || payload.name);
+        const requestedSlug = slugify(payload.slug || payload.name);
+        payload.isDeleted = false;
+        payload.deletedAt = null;
+
+        const deletedProduct = await Product.findOne({ slug: requestedSlug, isDeleted: true });
+        if (deletedProduct) {
+            payload.slug = requestedSlug;
+            const restoredProduct = await Product.findByIdAndUpdate(
+                deletedProduct._id,
+                payload,
+                { new: true, runValidators: true }
+            );
+            return res.status(201).json(restoredProduct);
+        }
+
+        payload.slug = await getUniqueSlug(requestedSlug);
 
         const newProduct = new Product(payload);
         const savedProduct = await newProduct.save();
@@ -142,12 +162,18 @@ exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const payload = normalizeProductPayload(req.body);
+        payload.isDeleted = false;
+        payload.deletedAt = null;
 
         if (payload.slug || payload.name) {
             payload.slug = await getUniqueSlug(payload.slug || payload.name, id);
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+        const updatedProduct = await Product.findOneAndUpdate(
+            { _id: id, ...notDeletedFilter },
+            payload,
+            { new: true, runValidators: true }
+        );
         if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
         res.status(200).json(updatedProduct);
     } catch (error) {
@@ -159,10 +185,14 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedProduct = await Product.findByIdAndDelete(id);
+        const deletedProduct = await Product.findOneAndUpdate(
+            { _id: id, ...notDeletedFilter },
+            { isDeleted: true, deletedAt: new Date(), exportAvailability: false },
+            { new: true }
+        );
         if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
 
-        res.status(200).json({ message: 'Product deleted successfully' });
+        res.status(200).json({ message: 'Product deleted successfully', product: deletedProduct });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
