@@ -102,3 +102,21 @@ export const adminLogin = async (username, password) => {
     if (!res.ok) throw new Error((await res.json()).message || 'Login failed');
     return res.json();
 };
+
+export const getAdminProfile = async () => {
+    const res = await fetch(`${API_BASE}/admin/profile`, {
+        headers: getHeaders(true),
+    });
+    if (!res.ok) throw new Error((await res.json()).message || 'Failed to fetch admin profile');
+    return res.json();
+};
+
+export const updateAdminProfile = async (data) => {
+    const res = await fetch(`${API_BASE}/admin/profile`, {
+        method: 'PUT',
+        headers: getHeaders(true),
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error((await res.json()).message || 'Failed to update admin profile');
+    return res.json();
+};
