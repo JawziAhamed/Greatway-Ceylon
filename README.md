@@ -53,12 +53,28 @@ NODE_ENV=development
 WHATSAPP_ACCESS_TOKEN=your_meta_cloud_api_access_token
 WHATSAPP_PHONE_NUMBER_ID=your_meta_phone_number_id
 WHATSAPP_GRAPH_VERSION=v23.0
-OFFICIAL_WHATSAPP_NUMBER=+94725737391
+WHATSAPP_ADMIN_NUMBER=94725737391
 
-# Optional, recommended for production business-initiated notifications
+# Optional local switch
+BYPASS_WHATSAPP_NOTIFICATION=false
+
+# Optional, recommended for production business-initiated notifications.
+# Template body variables:
+# {{1}} customer name, {{2}} email, {{3}} phone, {{4}} product,
+# {{5}} message, {{6}} submitted time.
 WHATSAPP_TEMPLATE_NAME=new_inquiry_notification
 WHATSAPP_TEMPLATE_LANGUAGE=en_US
 ```
+
+WhatsApp credentials must be configured only in the backend environment, such as
+`backend/.env` locally or Render/Vercel backend environment variables in
+production. Do not add `WHATSAPP_ACCESS_TOKEN` or `WHATSAPP_PHONE_NUMBER_ID` to
+`frontend/.env`.
+
+For development, use the temporary access token and test phone number ID from the
+Meta developer dashboard. For production, create a permanent system-user token,
+connect the live WhatsApp phone number, and use an approved WhatsApp message
+template by setting `WHATSAPP_TEMPLATE_NAME`.
 
 ### Frontend (`frontend/.env`)
 ```
