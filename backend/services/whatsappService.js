@@ -12,16 +12,25 @@ const getSubmittedAt = (inquiry) => {
 };
 
 const getWhatsAppConfig = () => ({
-    accessToken: process.env.WHATSAPP_ACCESS_TOKEN,
-    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
-    graphVersion: process.env.WHATSAPP_GRAPH_VERSION || DEFAULT_GRAPH_VERSION,
+    accessToken: process.env.WHATSAPP_ACCESS_TOKEN?.trim(),
+    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID?.trim(),
+    graphVersion: (process.env.WHATSAPP_GRAPH_VERSION || DEFAULT_GRAPH_VERSION).trim(),
     adminNumber: normalizePhoneNumber(
         process.env.WHATSAPP_ADMIN_NUMBER || process.env.OFFICIAL_WHATSAPP_NUMBER
     ),
-    templateName: process.env.WHATSAPP_TEMPLATE_NAME,
-    templateLanguage: process.env.WHATSAPP_TEMPLATE_LANGUAGE || DEFAULT_TEMPLATE_LANGUAGE,
+    templateName: process.env.WHATSAPP_TEMPLATE_NAME?.trim(),
+    templateLanguage: (process.env.WHATSAPP_TEMPLATE_LANGUAGE || DEFAULT_TEMPLATE_LANGUAGE).trim(),
     bypassEnabled: process.env.BYPASS_WHATSAPP_NOTIFICATION === 'true',
 });
+
+const maskValue = (value = '') => {
+    if (!value) return 'not_configured';
+    if (value.length <= 6) return `${value[0]}***${value[value.length - 1]}`;
+    return `${value.slice(0, 3)}***${value.slice(-4)}`;
+};
+
+const getMetaMessagesEndpoint = (config) =>
+    `https://graph.facebook.com/${config.graphVersion}/${config.phoneNumberId}/messages`;
 
 const buildInquiryTextMessage = (inquiry) => (
     `New Inquiry - Greatway Ceylon\n\n` +
@@ -96,17 +105,44 @@ const sendInquiryNotification = async (inquiry) => {
         return { sent: false, skipped: true, reason: 'missing_config', missingConfig };
     }
 
-    const response = await fetch(
-        `https://graph.facebook.com/${config.graphVersion}/${config.phoneNumberId}/messages`,
-        {
+    const endpoint = getMetaMessagesEndpoint(config);
+    const payload = buildInquiryPayload(inquiry, config);
+
+    console.info('[WhatsApp Cloud API] Request configuration', {
+        endpoint,
+        method: 'POST',
+        graphVersion: config.graphVersion,
+        phoneNumberId: config.phoneNumberId,
+        adminNumber: maskValue(config.adminNumber),
+        messageType: payload.type,
+        templateName: config.templateName || null,
+        templateLanguage: config.templateName ? config.templateLanguage : null,
+        accessTokenConfigured: Boolean(config.accessToken),
+    });
+
+    let response;
+    try {
+        response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${config.accessToken}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(buildInquiryPayload(inquiry, config)),
-        }
-    );
+            body: JSON.stringify(payload),
+        });
+    } catch (error) {
+        console.error('[WhatsApp Cloud API] Network request failed before Meta returned a response', {
+            endpoint,
+            graphVersion: config.graphVersion,
+            phoneNumberId: config.phoneNumberId,
+            adminNumber: maskValue(config.adminNumber),
+            errorName: error.name,
+            errorMessage: error.message,
+            causeCode: error.cause?.code,
+            causeMessage: error.cause?.message,
+        });
+        throw error;
+    }
 
     const result = await response.json().catch(() => ({}));
 
