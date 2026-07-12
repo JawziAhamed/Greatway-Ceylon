@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "seed:products": "node scripts/seedProducts.mjs",
+    "seed:products:force": "node scripts/seedProducts.mjs --force",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
